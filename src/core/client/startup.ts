@@ -1,7 +1,11 @@
 import * as alt from 'alt-client';
 import * as native from 'natives';
 
-alt.onServer("clientHunting:preparePed", (animalPed: alt.Ped) => {
+alt.on('netOwnerChange', (animalEntity: alt.Entity, newOwner: alt.Player, oldOwner: alt.Player) => {
+    alt.emitServerRaw('serverHunting:netOwnerChange', animalEntity.remoteID);
+});
+
+alt.onServer('clientHunting:setIntialStatus', (animalPed: alt.Ped) => {
     native.setEntityAsMissionEntity(animalPed.scriptID, true, false);
     native.freezeEntityPosition(animalPed.scriptID, false);
     native.setPedCanRagdoll(animalPed.scriptID, false);
@@ -11,17 +15,16 @@ alt.onServer("clientHunting:preparePed", (animalPed: alt.Ped) => {
     native.setPedCombatAttributes(animalPed.scriptID, 17, true);
     native.setEntityInvincible(animalPed.scriptID, false);
     native.setPedSeeingRange(animalPed.scriptID, 0);
+});
+
+alt.onServer('clientHunting:setAnimalGrazing', (animalPed: alt.Ped) => {
     native.taskStartScenarioInPlace(animalPed.scriptID, 'WORLD_DEER_GRAZING', -1, true);
 });
 
-alt.on('netOwnerChange', (entity: alt.Entity, owner: alt.Player, oldOwner: alt.Player) => {
-    alt.emitServerRaw('serverHunting:checkAnimalId', entity.remoteID);
+alt.onServer('clientHunting:setAnimalWandering', (animalPed: alt.Ped, animalSpawnPosition: alt.Vector3) => {
+    native.taskWanderInArea(animalPed.scriptID, animalSpawnPosition.x, animalSpawnPosition.y, animalSpawnPosition.z, 30, 0, 0);
 });
 
-alt.onServer('clientHunting:smartFlee', (animalPed: alt.Ped, fleeFrom: alt.Player) => {
-    native.taskSmartFleePed(animalPed.scriptID, fleeFrom.scriptID, 30, 5000, false, false);
-});
-
-alt.on('playerWeaponShoot', () => {
-    alt.emitServerRaw('serverHunting:weaponShoot');
+alt.onServer('clientHunting:setAnimalFleeing', (animalPed: alt.Ped) => {
+    native.taskStartScenarioInPlace(animalPed.scriptID, 'WORLD_DEER_GRAZING', -1, true);
 });
