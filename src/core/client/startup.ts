@@ -22,7 +22,7 @@ alt.onServer('clientHunting:setAnimalGrazing', (animalPed: alt.Ped) => {
 });
 
 alt.onServer('clientHunting:setAnimalWandering', (animalPed: alt.Ped, animalSpawnPosition: alt.Vector3) => {
-    native.taskWanderInArea(animalPed.scriptID, animalSpawnPosition.x, animalSpawnPosition.y, animalSpawnPosition.z, 30, 0, 0);
+    native.taskWanderInArea(animalPed.scriptID, animalSpawnPosition.x, animalSpawnPosition.y, animalSpawnPosition.z, 5.0, 0, 0);
 });
 
 alt.onServer('clientHunting:setAnimalFleeing', (animalPed: alt.Ped) => {
