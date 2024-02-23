@@ -1,6 +1,6 @@
 import * as alt from 'alt-server';
 
-const fleeDuration = 3000;
+const animalMoveRadius = 30;
 const animalSpawnPoints: alt.Vector3 [] = [
     new alt.Vector3(-1725.521, 4699.659, 33.80555),
     new alt.Vector3(-1690.836, 4682.494, 24.47228),
@@ -45,6 +45,26 @@ const enum AnimalType {
     Boar = "a_c_boar"
 };
 
+
+function randomPointInCircle(centerX: number, centerY: number, radius: number): alt.Vector2 {
+    const randomAngle = Math.random() * 2 * Math.PI;
+    const randomRadius = Math.sqrt(Math.random()) * radius;
+    const x = centerX + randomRadius * Math.cos(randomAngle);
+    const y = centerY + randomRadius * Math.sin(randomAngle);
+
+    return new alt.Vector2(x, y);
+};
+
+function calculateHeading(startX: number, startY: number, endX: number, endY: number): number {
+    const deltaX = endX - startX;
+    const deltaY = endY - startY;
+    const heading = Math.atan2(deltaY, deltaX);
+    const headingDegrees = (heading * 180) / Math.PI;
+    const adjustedHeading = (headingDegrees + 360) % 360;
+
+    return adjustedHeading;
+};
+
 class Animal {
     animalPed: alt.Ped;
     animalSpawn: alt.Vector3;
@@ -63,13 +83,17 @@ class Animal {
         this.setAnimalStatus();
     };
 
-    private setAnimalStatus() {
+    public setAnimalStatus() {
         switch (this.animalStatus) {
             case AnimalStatus.Grazing:
                 this.animalPed.netOwner.emitRaw('clientHunting:setAnimalGrazing', this.animalPed);
                 break;
             case AnimalStatus.Wandering:
-                this.animalPed.netOwner.emitRaw('clientHunting:setAnimalWandering', this.animalPed, this.animalSpawn);
+                const animalPosition = this.animalPed.pos;
+                const randomCoords = randomPointInCircle(animalPosition.x, animalPosition.y, animalMoveRadius);
+                const coordsAngle = calculateHeading(animalPosition.x, animalPosition.y, randomCoords.x, randomCoords.y);
+
+                this.animalPed.netOwner.emitRaw('clientHunting:setAnimalWandering', this.animalPed, randomCoords, coordsAngle);
                 break;
             case AnimalStatus.Fleeing:
                 // this.animalPed.netOwner.emitRaw('clientHunting:setAnimalFleeing', this.animalPed);
@@ -90,7 +114,9 @@ class Animal {
     };
 };
 
-alt.on('resourceStart', () => {
+alt.on('resourceStart', (isErrored: boolean) => {
+    if (isErrored) return;
+
     let isDeer = true;
     
     animalSpawnPoints.forEach(animalPosition => {
@@ -113,4 +139,5 @@ alt.onClient('serverHunting:netOwnerChange', (player: alt.Player, remoteId: numb
 
     foundAnimal.setInitialStatus();
 });
+
 

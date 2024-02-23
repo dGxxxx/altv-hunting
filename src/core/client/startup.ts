@@ -21,8 +21,11 @@ alt.onServer('clientHunting:setAnimalGrazing', (animalPed: alt.Ped) => {
     native.taskStartScenarioInPlace(animalPed.scriptID, 'WORLD_DEER_GRAZING', -1, true);
 });
 
-alt.onServer('clientHunting:setAnimalWandering', (animalPed: alt.Ped, animalSpawnPosition: alt.Vector3) => {
-    native.taskWanderInArea(animalPed.scriptID, animalSpawnPosition.x, animalSpawnPosition.y, animalSpawnPosition.z, 5.0, 0, 0);
+alt.onServer('clientHunting:setAnimalWandering', (animalPed: alt.Ped, randomCoords: alt.Vector2, coordsAngle: number) => {
+    alt.FocusData.overrideFocus(animalPed.pos);
+
+    let groundZ = native.getGroundZFor3dCoord(randomCoords.x, randomCoords.y, 100, 0, true, true);
+    native.taskGoStraightToCoord(animalPed.scriptID, randomCoords.x, randomCoords.y, groundZ[1], 1, 60000, coordsAngle, 0);
 });
 
 alt.onServer('clientHunting:setAnimalFleeing', (animalPed: alt.Ped) => {

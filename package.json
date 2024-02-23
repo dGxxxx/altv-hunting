@@ -3,7 +3,7 @@
     "version": "5.3.0",
     "description": "TypeScript with alt:V Made Easy",
     "scripts": {
-        "update": "altv-pkg d dev",
+        "update": "altv-pkg d release",
         "build": "node ./scripts/compiler.js && node ./scripts/copy.js",
         "windows": "npm run build && altv-server.exe",
         "linux": "npm run build && ./altv-server",
