@@ -90,6 +90,7 @@ class Animal {
     animalType: AnimalType;
     animalDestination: alt.Vector2 | null;
     animalDestinationColshape: alt.Colshape | null;
+    endGrazingTimeout: number | null;
 
     constructor(spawnPosition: alt.Vector3, animalType: AnimalType) {
         this.animalPed = new alt.Ped(animalType, spawnPosition, new alt.Vector3(0, 0, 0));
@@ -98,10 +99,27 @@ class Animal {
         this.animalType = animalType;
         this.animalDestination = null;
         this.animalDestinationColshape = null;
+        this.endGrazingTimeout = null;
     };
 
     public setInitialStatus() {
+        if (this.animalPed.netOwner == null) return;
+
         this.animalPed.netOwner.emitRaw('clientHunting:setIntialStatus', this.animalPed);
+
+        if (this.animalDestination != null) { this.animalDestination = null; };
+
+        if (this.animalDestinationColshape != null) { 
+            this.animalDestinationColshape.destroy; 
+            this.animalDestinationColshape = null; 
+        };
+
+        if (this.animalDestination != null) { 
+            alt.clearTimeout(this.endGrazingTimeout);
+            this.endGrazingTimeout = null;
+        };
+
+        this.animalStatus = AnimalStatus.Grazing;
         this.setAnimalStatus();
     };
 
@@ -117,13 +135,16 @@ class Animal {
     }
 
     public setAnimalStatus() {
+        if (this.animalPed.netOwner == null) return;
+        
         switch (this.animalStatus) {
             case AnimalStatus.Grazing:
                 let randomSeconds = randomIntFromInterval(30, 50);
                 this.animalPed.netOwner.emitRaw('clientHunting:setAnimalGrazing', this.animalPed);
 
-                let endGrazingTimeout = alt.setTimeout(() => {
+                this.endGrazingTimeout = alt.setTimeout(() => {
                     this.setWandering();
+                    this.endGrazingTimeout = null;
                 }, randomSeconds * 1000);
 
                 break;
