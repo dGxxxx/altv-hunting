@@ -65,23 +65,50 @@ function calculateHeading(startX: number, startY: number, endX: number, endY: nu
     return adjustedHeading;
 };
 
+alt.on('entityEnterColshape', (colshape: alt.Colshape, entity: alt.Entity) => {
+    if (!(entity instanceof alt.Ped)) {
+        return;
+    };
+
+    let foundAnimal = animalList.find(x => x.animalDestinationColshape != null && x.animalDestinationColshape.id == colshape.id);
+    
+    if (foundAnimal == null) return;
+    if (foundAnimal.animalPed.id != entity.id) return;
+
+    foundAnimal.reachDestination();
+    foundAnimal.setGrazing();
+});
+
 class Animal {
     animalPed: alt.Ped;
     animalSpawn: alt.Vector3;
     animalStatus: AnimalStatus;
     animalType: AnimalType;
+    animalDestination: alt.Vector2 | null;
+    animalDestinationColshape: alt.Colshape | null;
 
     constructor(spawnPosition: alt.Vector3, animalType: AnimalType) {
         this.animalPed = new alt.Ped(animalType, spawnPosition, new alt.Vector3(0, 0, 0));
         this.animalSpawn = spawnPosition;
         this.animalStatus = AnimalStatus.Wandering;
         this.animalType = animalType;
+        this.animalDestination = null;
+        this.animalDestinationColshape = null;
     };
 
     public setInitialStatus() {
         this.animalPed.netOwner.emitRaw('clientHunting:setIntialStatus', this.animalPed);
         this.setAnimalStatus();
     };
+
+    public reachDestination() {
+        if (this.animalDestination == null) return;
+        if (this.animalDestinationColshape == null) return;
+
+        this.animalDestination = null;
+        this.animalDestinationColshape.destroy();
+        this.animalDestinationColshape = null;
+    }
 
     public setAnimalStatus() {
         switch (this.animalStatus) {
@@ -93,7 +120,10 @@ class Animal {
                 const randomCoords = randomPointInCircle(animalPosition.x, animalPosition.y, animalMoveRadius);
                 const coordsAngle = calculateHeading(animalPosition.x, animalPosition.y, randomCoords.x, randomCoords.y);
 
+                this.animalDestinationColshape = new alt.ColshapeCircle(randomCoords.x, randomCoords.y, 3);
                 this.animalPed.netOwner.emitRaw('clientHunting:setAnimalWandering', this.animalPed, randomCoords, coordsAngle);
+                this.animalDestination = randomCoords;
+
                 break;
             case AnimalStatus.Fleeing:
                 // this.animalPed.netOwner.emitRaw('clientHunting:setAnimalFleeing', this.animalPed);
@@ -111,6 +141,7 @@ class Animal {
 
     public setGrazing() {
         this.animalStatus = AnimalStatus.Grazing;
+        this.setAnimalStatus();
     };
 };
 

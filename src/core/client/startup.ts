@@ -18,6 +18,20 @@ alt.onServer('clientHunting:setIntialStatus', (animalPed: alt.Ped) => {
 });
 
 alt.onServer('clientHunting:setAnimalGrazing', (animalPed: alt.Ped) => {
+    let deerModel = alt.hash('a_c_deer');
+    let boarModel = alt.hash('a_c_boar');
+
+    native.clearPedTasks(animalPed);
+
+    switch (animalPed.model) {
+        case deerModel:
+            native.taskStartScenarioInPlace(animalPed.scriptID, 'WORLD_DEER_GRAZING', -1, true);
+            break;
+        case boarModel: 
+            native.taskStartScenarioInPlace(animalPed.scriptID, 'WORLD_BOAR_GRAZING', -1, true);
+            break;
+    }
+
     native.taskStartScenarioInPlace(animalPed.scriptID, 'WORLD_DEER_GRAZING', -1, true);
 });
 
@@ -25,9 +39,11 @@ alt.onServer('clientHunting:setAnimalWandering', (animalPed: alt.Ped, randomCoor
     alt.FocusData.overrideFocus(animalPed.pos);
 
     let groundZ = native.getGroundZFor3dCoord(randomCoords.x, randomCoords.y, 100, 0, true, true);
-    native.taskGoStraightToCoord(animalPed.scriptID, randomCoords.x, randomCoords.y, groundZ[1], 1, 60000, coordsAngle, 0);
+    let numericGroundZ = groundZ[1];
+
+    native.taskGoStraightToCoord(animalPed.scriptID, randomCoords.x, randomCoords.y, numericGroundZ, 1, 60000, coordsAngle, 0);
 });
 
 alt.onServer('clientHunting:setAnimalFleeing', (animalPed: alt.Ped) => {
-    native.taskStartScenarioInPlace(animalPed.scriptID, 'WORLD_DEER_GRAZING', -1, true);
+    
 });
