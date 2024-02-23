@@ -55,6 +55,10 @@ function randomPointInCircle(centerX: number, centerY: number, radius: number): 
     return new alt.Vector2(x, y);
 };
 
+function randomIntFromInterval(minNumber, maxNumber) { 
+    return Math.floor(Math.random() * (maxNumber - minNumber + 1) + minNumber);
+};
+
 function calculateHeading(startX: number, startY: number, endX: number, endY: number): number {
     const deltaX = endX - startX;
     const deltaY = endY - startY;
@@ -108,17 +112,24 @@ class Animal {
         this.animalDestination = null;
         this.animalDestinationColshape.destroy();
         this.animalDestinationColshape = null;
+
+        this.setGrazing();
     }
 
     public setAnimalStatus() {
         switch (this.animalStatus) {
             case AnimalStatus.Grazing:
+                let randomSeconds = randomIntFromInterval(30, 50);
                 this.animalPed.netOwner.emitRaw('clientHunting:setAnimalGrazing', this.animalPed);
+
+                let endGrazingTimeout = alt.setTimeout(() => {
+                    this.setWandering();
+                }, randomSeconds * 1000);
+
                 break;
             case AnimalStatus.Wandering:
-                const animalPosition = this.animalPed.pos;
-                const randomCoords = randomPointInCircle(animalPosition.x, animalPosition.y, animalMoveRadius);
-                const coordsAngle = calculateHeading(animalPosition.x, animalPosition.y, randomCoords.x, randomCoords.y);
+                const randomCoords = randomPointInCircle(this.animalSpawn.x, this.animalSpawn.y, animalMoveRadius);
+                const coordsAngle = calculateHeading(this.animalSpawn.x, this.animalSpawn.y, randomCoords.x, randomCoords.y);
 
                 this.animalDestinationColshape = new alt.ColshapeCircle(randomCoords.x, randomCoords.y, 3);
                 this.animalPed.netOwner.emitRaw('clientHunting:setAnimalWandering', this.animalPed, randomCoords, coordsAngle);
@@ -137,6 +148,7 @@ class Animal {
 
     public setWandering() {
         this.animalStatus = AnimalStatus.Wandering;
+        this.setAnimalStatus();
     };
 
     public setGrazing() {
@@ -166,7 +178,9 @@ alt.on('playerConnect', (player: alt.Player) => {
 
 alt.onClient('serverHunting:netOwnerChange', (player: alt.Player, remoteId: number) => {
     let foundAnimal = animalList.find(x => x.animalPed.id == remoteId);
+
     if (foundAnimal == null || foundAnimal == undefined) return;
+    if (foundAnimal.animalPed.netOwner.id != player.id) return; 
 
     foundAnimal.setInitialStatus();
 });
