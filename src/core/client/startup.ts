@@ -5,7 +5,9 @@ alt.on('netOwnerChange', (animalEntity: alt.Entity, newOwner: alt.Player, oldOwn
     alt.emitServerRaw('serverHunting:netOwnerChange', animalEntity.remoteID);
 });
 
-alt.onServer('clientHunting:setIntialStatus', (animalPed: alt.Ped) => {
+alt.onServer('clientHunting:setIntialStatus', async (animalPed: alt.Ped) => {
+    await alt.Utils.waitFor(() => animalPed.isSpawned);
+
     native.setEntityAsMissionEntity(animalPed.scriptID, true, false);
     native.freezeEntityPosition(animalPed.scriptID, false);
     native.setPedCanRagdoll(animalPed.scriptID, false);
@@ -17,9 +19,11 @@ alt.onServer('clientHunting:setIntialStatus', (animalPed: alt.Ped) => {
     native.setPedSeeingRange(animalPed.scriptID, 0);
 });
 
-alt.onServer('clientHunting:setAnimalGrazing', (animalPed: alt.Ped) => {
+alt.onServer('clientHunting:setAnimalGrazing', async (animalPed: alt.Ped) => {
     let deerModel = alt.hash('a_c_deer');
     let boarModel = alt.hash('a_c_boar');
+
+    await alt.Utils.waitFor(() => animalPed.isSpawned);
 
     native.clearPedTasks(animalPed);
 
@@ -31,11 +35,10 @@ alt.onServer('clientHunting:setAnimalGrazing', (animalPed: alt.Ped) => {
             native.taskStartScenarioInPlace(animalPed.scriptID, 'WORLD_BOAR_GRAZING', -1, true);
             break;
     }
-
-    native.taskStartScenarioInPlace(animalPed.scriptID, 'WORLD_DEER_GRAZING', -1, true);
 });
 
-alt.onServer('clientHunting:setAnimalWandering', (animalPed: alt.Ped, randomCoords: alt.Vector2, coordsAngle: number) => {
+alt.onServer('clientHunting:setAnimalWandering', async (animalPed: alt.Ped, randomCoords: alt.Vector2, coordsAngle: number) => {
+    await alt.Utils.waitFor(() => animalPed.isSpawned);
     alt.FocusData.overrideFocus(animalPed.pos);
 
     let groundZ = native.getGroundZFor3dCoord(randomCoords.x, randomCoords.y, 100, 0, true, true);
