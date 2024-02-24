@@ -1,4 +1,5 @@
 import * as alt from 'alt-client';
+import { KeyCode } from 'alt-shared';
 import * as native from 'natives';
 
 alt.on('netOwnerChange', (animalEntity: alt.Entity, newOwner: alt.Player, oldOwner: alt.Player) => {
@@ -6,7 +7,13 @@ alt.on('netOwnerChange', (animalEntity: alt.Entity, newOwner: alt.Player, oldOwn
 });
 
 alt.on('playerWeaponShoot', (weaponHash: number, totalAmmo: number, ammoInClip: number) => {
-    alt.emitServer('serverHunting:weaponShot');
+    alt.emitServerRaw('serverHunting:weaponShot');
+});
+
+alt.on('keyup', (key: alt.KeyCode) => {
+    if (key != 69) return;
+
+    alt.emitServerRaw('serverHunting:pickupAnimal');
 });
 
 alt.onServer('clientHunting:setIntialStatus', async (animalPed: alt.Ped) => {
@@ -52,6 +59,5 @@ alt.onServer('clientHunting:setAnimalWandering', async (animalPed: alt.Ped, rand
 alt.onServer('clientHunting:setAnimalFleeing', async (animalPed: alt.Ped, fleeTarget: alt.Player, fleeDistance: number) => {
     await alt.Utils.waitFor(() => animalPed.isSpawned);
 
-    native.clearPedTasks(animalPed);
     native.taskSmartFleePed(animalPed, fleeTarget, fleeDistance, 10000, false, false);
 });
