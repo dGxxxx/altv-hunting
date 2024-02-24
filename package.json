@@ -1,7 +1,7 @@
 {
-    "name": "altv-quickstart-ts",
-    "version": "5.3.0",
-    "description": "TypeScript with alt:V Made Easy",
+    "name": "altv-hunting",
+    "version": "1.0.0",
+    "description": "alt:V Hunting",
     "scripts": {
         "update": "altv-pkg d release",
         "build": "node ./scripts/compiler.js && node ./scripts/copy.js",
@@ -9,7 +9,7 @@
         "linux": "npm run build && ./altv-server",
         "dev": "node ./scripts/watch.js"
     },
-    "author": "stuyk",
+    "author": "dGxxxx",
     "license": "ISC",
     "devDependencies": {
         "@altv/types-client": "^15.0.9",
