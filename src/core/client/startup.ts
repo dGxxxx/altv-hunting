@@ -1,5 +1,4 @@
 import * as alt from 'alt-client';
-import { KeyCode } from 'alt-shared';
 import * as native from 'natives';
 
 alt.on('netOwnerChange', (animalEntity: alt.Entity, newOwner: alt.Player, oldOwner: alt.Player) => {
