@@ -102,6 +102,7 @@ class Animal {
     endGrazingTimeout: number | null;
     endFleeTimeout: number | null;
     fleeTarget: alt.Player | null;
+    rangeCheck: number | null;
 
     constructor(spawnPosition: alt.Vector3, animalType: AnimalType) {
         this.animalPed = new alt.Ped(animalType, spawnPosition, new alt.Vector3(0, 0, 0));
@@ -113,6 +114,15 @@ class Animal {
         this.endGrazingTimeout = null;
         this.fleeTarget = null;
         this.endFleeTimeout = null;
+
+        this.rangeCheck = alt.setInterval(() => {
+            let allPlayers = alt.Player.all;
+            let rangeCheckPlayer = allPlayers.find(x => x.pos.distanceTo(this.animalPed.pos) < 30);
+
+            if (rangeCheckPlayer == null) return;
+
+            this.setFleeing(rangeCheckPlayer);
+        }, 1000)
     };
 
     public setInitialStatus() {
@@ -122,11 +132,11 @@ class Animal {
 
         if (this.animalDestination != null) { 
             this.animalDestination = null; 
+        };
 
-            if (this.endGrazingTimeout != null) {
-                alt.clearTimeout(this.endGrazingTimeout);
-                this.endGrazingTimeout = null;
-            };
+        if (this.endGrazingTimeout != null) {
+            alt.clearTimeout(this.endGrazingTimeout);
+            this.endGrazingTimeout = null;
         };
 
         if (this.animalDestinationColshape != null) { 
@@ -136,11 +146,11 @@ class Animal {
 
         if (this.fleeTarget != null) { 
             this.fleeTarget = null;
+        };
 
-            if (this.endFleeTimeout != null) {
-                alt.clearTimeout(this.endFleeTimeout);
-                this.endFleeTimeout = null;
-            };
+        if (this.endFleeTimeout != null) {
+            alt.clearTimeout(this.endFleeTimeout);
+            this.endFleeTimeout = null;
         };
 
         this.setGrazing();
@@ -201,11 +211,11 @@ class Animal {
     public setFleeing(fromEntity: alt.Player) {
        if (this.animalDestination != null) { 
             this.animalDestination = null; 
+        };
 
-            if (this.endGrazingTimeout != null) {
-                alt.clearTimeout(this.endGrazingTimeout);
-                this.endGrazingTimeout = null;
-            };
+        if (this.endGrazingTimeout != null) {
+            alt.clearTimeout(this.endGrazingTimeout);
+            this.endGrazingTimeout = null;
         };
 
         if (this.animalDestinationColshape != null) { 
