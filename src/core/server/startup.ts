@@ -1,6 +1,7 @@
 import * as alt from 'alt-server';
 
 const animalMoveRadius = 30;
+const fleeDistance = 40;
 const animalSpawnPoints: alt.Vector3 [] = [
     new alt.Vector3(-1725.521, 4699.659, 33.80555),
     new alt.Vector3(-1690.836, 4682.494, 24.47228),
@@ -82,6 +83,15 @@ alt.on('entityEnterColshape', (colshape: alt.Colshape, entity: alt.Entity) => {
     foundAnimal.reachDestination();
 });
 
+alt.onClient('serverHunting:weaponShot', (player: alt.Player) => {
+    animalList.forEach(spawnedAnimal => {
+        let vecDistance = spawnedAnimal.animalPed.pos.distanceTo(player.pos);
+        if (vecDistance > 30) return;
+
+        spawnedAnimal.setFleeing(player);
+    });
+});
+
 class Animal {
     animalPed: alt.Ped;
     animalSpawn: alt.Vector3;
@@ -90,6 +100,8 @@ class Animal {
     animalDestination: alt.Vector2 | null;
     animalDestinationColshape: alt.Colshape | null;
     endGrazingTimeout: number | null;
+    endFleeTimeout: number | null;
+    fleeTarget: alt.Player | null;
 
     constructor(spawnPosition: alt.Vector3, animalType: AnimalType) {
         this.animalPed = new alt.Ped(animalType, spawnPosition, new alt.Vector3(0, 0, 0));
@@ -99,22 +111,36 @@ class Animal {
         this.animalDestination = null;
         this.animalDestinationColshape = null;
         this.endGrazingTimeout = null;
+        this.fleeTarget = null;
+        this.endFleeTimeout = null;
     };
 
     public setInitialStatus() {
         if (this.animalPed.netOwner == null) return;
+
         this.animalPed.netOwner.emitRaw('clientHunting:setIntialStatus', this.animalPed);
 
-        if (this.animalDestination != null) { this.animalDestination = null; };
+        if (this.animalDestination != null) { 
+            this.animalDestination = null; 
+
+            if (this.endGrazingTimeout != null) {
+                alt.clearTimeout(this.endGrazingTimeout);
+                this.endGrazingTimeout = null;
+            };
+        };
 
         if (this.animalDestinationColshape != null) { 
             this.animalDestinationColshape.destroy; 
             this.animalDestinationColshape = null; 
         };
 
-        if (this.animalDestination != null) { 
-            alt.clearTimeout(this.endGrazingTimeout);
-            this.endGrazingTimeout = null;
+        if (this.fleeTarget != null) { 
+            this.fleeTarget = null;
+
+            if (this.endFleeTimeout != null) {
+                alt.clearTimeout(this.endFleeTimeout);
+                this.endFleeTimeout = null;
+            };
         };
 
         this.setGrazing();
@@ -155,13 +181,44 @@ class Animal {
 
                 break;
             case AnimalStatus.Fleeing:
-                // this.animalPed.netOwner.emitRaw('clientHunting:setAnimalFleeing', this.animalPed);
+                this.animalPed.netOwner.emitRaw('clientHunting:setAnimalFleeing', this.animalPed, this.fleeTarget, fleeDistance);
+
+                /* 
+                    This timeout can be improved. The 10 second is just a random value that assumes that the ped had flee away enough from the ped shooting.
+                */
+
+                this.endFleeTimeout = alt.setTimeout(() => {
+                    this.setGrazing();
+
+                    this.fleeTarget = null;
+                    this.endFleeTimeout = null;
+                }, 10 * 1000);
+
                 break;
         }
     }
 
     public setFleeing(fromEntity: alt.Player) {
+       if (this.animalDestination != null) { 
+            this.animalDestination = null; 
+
+            if (this.endGrazingTimeout != null) {
+                alt.clearTimeout(this.endGrazingTimeout);
+                this.endGrazingTimeout = null;
+            };
+        };
+
+        if (this.animalDestinationColshape != null) { 
+            this.animalDestinationColshape.destroy; 
+            this.animalDestinationColshape = null; 
+        };
+
+        if (this.fleeTarget != null) return;
+
         this.animalStatus = AnimalStatus.Fleeing;
+        this.fleeTarget = fromEntity;
+
+        this.setAnimalStatus();
     };
 
     public setWandering() {

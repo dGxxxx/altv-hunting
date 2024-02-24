@@ -5,6 +5,10 @@ alt.on('netOwnerChange', (animalEntity: alt.Entity, newOwner: alt.Player, oldOwn
     alt.emitServerRaw('serverHunting:netOwnerChange', animalEntity.remoteID);
 });
 
+alt.on('playerWeaponShoot', (weaponHash: number, totalAmmo: number, ammoInClip: number) => {
+    alt.emitServer('serverHunting:weaponShot');
+});
+
 alt.onServer('clientHunting:setIntialStatus', async (animalPed: alt.Ped) => {
     await alt.Utils.waitFor(() => animalPed.isSpawned);
 
@@ -45,6 +49,9 @@ alt.onServer('clientHunting:setAnimalWandering', async (animalPed: alt.Ped, rand
     native.taskGoStraightToCoord(animalPed.scriptID, randomCoords.x, randomCoords.y, numericGroundZ, 1, 60000, coordsAngle, 0);
 });
 
-alt.onServer('clientHunting:setAnimalFleeing', (animalPed: alt.Ped) => {
-    
+alt.onServer('clientHunting:setAnimalFleeing', async (animalPed: alt.Ped, fleeTarget: alt.Player, fleeDistance: number) => {
+    await alt.Utils.waitFor(() => animalPed.isSpawned);
+
+    native.clearPedTasks(animalPed);
+    native.taskSmartFleePed(animalPed, fleeTarget, fleeDistance, 10000, false, false);
 });
