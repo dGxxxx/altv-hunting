@@ -36,3 +36,6 @@ npm run dev
 ```
 
 To close the server use: `CTRL + C` in the terminal.
+
+### Contact:
+- Discord: _dgx
