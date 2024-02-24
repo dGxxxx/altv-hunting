@@ -80,7 +80,6 @@ alt.on('entityEnterColshape', (colshape: alt.Colshape, entity: alt.Entity) => {
     if (foundAnimal.animalPed.id != entity.id) return;
 
     foundAnimal.reachDestination();
-    foundAnimal.setGrazing();
 });
 
 class Animal {
@@ -103,14 +102,8 @@ class Animal {
     };
 
     public setInitialStatus() {
-        alt.log("444");
-
         if (this.animalPed.netOwner == null) return;
-
         this.animalPed.netOwner.emitRaw('clientHunting:setIntialStatus', this.animalPed);
-
-        alt.log("666");
-
 
         if (this.animalDestination != null) { this.animalDestination = null; };
 
@@ -124,8 +117,7 @@ class Animal {
             this.endGrazingTimeout = null;
         };
 
-        this.animalStatus = AnimalStatus.Grazing;
-        this.setAnimalStatus();
+        this.setGrazing();
     };
 
     public reachDestination() {
@@ -144,7 +136,6 @@ class Animal {
         
         switch (this.animalStatus) {
             case AnimalStatus.Grazing:
-                alt.log("tttttt");
                 let randomSeconds = randomIntFromInterval(30, 50);
                 this.animalPed.netOwner.emitRaw('clientHunting:setAnimalGrazing', this.animalPed);
 
@@ -175,7 +166,7 @@ class Animal {
 
     public setWandering() {
         this.animalStatus = AnimalStatus.Wandering;
-        this.setAnimalStatus();
+        this.setAnimalStatus();  
     };
 
     public setGrazing() {
@@ -204,15 +195,10 @@ alt.on('playerConnect', (player: alt.Player) => {
 });
 
 alt.onClient('serverHunting:netOwnerChange', (player: alt.Player, remoteId: number) => {
-    alt.log("222");
-
     let foundAnimal = animalList.find(x => x.animalPed.id == remoteId);
 
     if (foundAnimal == null || foundAnimal == undefined) return;
-    if (foundAnimal.animalPed.netOwner.id != player.id) return; 
-
-    alt.log("333");
-
+    if (foundAnimal.animalPed.netOwner.id != player.id) return;
 
     foundAnimal.setInitialStatus();
 });

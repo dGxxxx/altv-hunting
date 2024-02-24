@@ -9,13 +9,11 @@ alt.onServer('clientHunting:setIntialStatus', async (animalPed: alt.Ped) => {
     await alt.Utils.waitFor(() => animalPed.isSpawned);
 
     native.setEntityAsMissionEntity(animalPed.scriptID, true, false);
-    native.freezeEntityPosition(animalPed.scriptID, false);
     native.setPedCanRagdoll(animalPed.scriptID, false);
     native.taskSetBlockingOfNonTemporaryEvents(animalPed.scriptID, true);
     native.setBlockingOfNonTemporaryEvents(animalPed.scriptID, true);
     native.setPedFleeAttributes(animalPed.scriptID, 0, false);
     native.setPedCombatAttributes(animalPed.scriptID, 17, true);
-    native.setEntityInvincible(animalPed.scriptID, false);
     native.setPedSeeingRange(animalPed.scriptID, 0);
 });
 
