@@ -13,7 +13,7 @@ Preview: https://streamable.com/3jix8s
 - The running animation of the animal may be weird sometimes. There is nothing that can be done as far as I know to solve this problem.
 
 ### To Do:
-- Optimisations for some server-side intervals.
+- Optimizations for some server-side intervals.
 - Test sync with more players. 
 
 ## Information:
