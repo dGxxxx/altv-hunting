@@ -85,7 +85,7 @@ alt.on('entityEnterColshape', (colshape: alt.Colshape, entity: alt.Entity) => {
 alt.onClient('serverHunting:weaponShot', (player: alt.Player) => {
     animalList.forEach(spawnedAnimal => {
         let vecDistance = spawnedAnimal.animalPed.pos.distanceTo(player.pos);
-        if (vecDistance > 30) return;
+        if (vecDistance > 50) return;
 
         spawnedAnimal.setFleeing(player);
     });
